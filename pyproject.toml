@@ -6,7 +6,7 @@ authors = ["Anton Arkhipov <antonolegovich44@yandex.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 flask = "^3.1.0"
 gunicorn = "^23.0.0"
 python-dotenv = "^1.0.1"
