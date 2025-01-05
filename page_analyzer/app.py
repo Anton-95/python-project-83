@@ -4,9 +4,18 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 import psycopg2
+import requests
 import validators
 from dotenv import load_dotenv
-from flask import Flask, flash, get_flashed_messages, redirect, render_template, request, url_for
+from flask import (
+    Flask,
+    flash,
+    get_flashed_messages,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from psycopg2.extras import RealDictCursor
 
 load_dotenv()
@@ -77,11 +86,17 @@ def get_url(url_id):
         url = cursor.fetchone()
 
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-        query = "SELECT id, status_code, h1, title, description, created_at FROM url_checks WHERE url_id = %s ORDER BY created_at DESC"
+        query = """SELECT
+                       id,
+                       status_code,
+                       h1,
+                       title,
+                       description,
+                       created_at
+                   FROM url_checks
+                   WHERE url_id = %s ORDER BY created_at DESC"""
         cursor.execute(query, (url_id,))
         check_url = cursor.fetchall()
-
-    conn.close()
 
     return render_template("url.html", url=url, check_url=check_url, messages=messages)
 
@@ -89,12 +104,29 @@ def get_url(url_id):
 @app.post("/urls/<int:url_id>/checks")
 def new_check(url_id):
     conn = psycopg2.connect(DATABASE_URL)
+
+    with conn.cursor() as cursor:
+        query = "SELECT name FROM urls WHERE id = %s"
+        cursor.execute(query, (url_id,))
+        url = cursor.fetchone()
+
+    try:
+        response = requests.get(url[0])
+        response.raise_for_status()
+    except requests.exceptions.RequestException:
+        flash("Произошла ошибка при проверке", category="error")
+        return redirect(url_for("get_url", url_id=url_id))
+
+    status_code = response.status_code
+
     with conn.cursor() as cursor:
         query = """INSERT INTO
                        url_checks (url_id, status_code, h1, title, description, created_at)
                    VALUES
                        (%s, %s, %s, %s, %s, %s)"""
-        cursor.execute(query, (url_id, 000, "test", "test", "test", datetime.now()))
+        cursor.execute(
+            query, (url_id, status_code, "test", "test", "test", datetime.now())
+        )
 
     conn.commit()
     flash("Страница успешно проверена", category="success")
@@ -107,10 +139,11 @@ def get_all_urls():
                    urls.id,
                    urls.name,
                    urls.created_at,
-                   MAX(url_checks.created_at) as last_check
+                   MAX(url_checks.created_at) as last_check,
+                   url_checks.status_code
                FROM urls
                LEFT JOIN url_checks ON urls.id = url_checks.url_id
-               GROUP BY urls.id
+               GROUP BY urls.id, url_checks.status_code
                ORDER BY created_at DESC"""
     conn = psycopg2.connect(DATABASE_URL)
 
@@ -119,6 +152,7 @@ def get_all_urls():
         urls = cursor.fetchall()
 
     conn.close()
+
     if urls is None:
         return render_template("urls.html", urls="")
     return render_template("urls.html", urls=urls)
