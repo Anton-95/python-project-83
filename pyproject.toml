@@ -4,6 +4,10 @@ version = "0.1.0"
 description = ""
 authors = ["Anton Arkhipov <antonolegovich44@yandex.ru>"]
 readme = "README.md"
+packages = [
+  { include = "page_analyzer" },
+]
+
 
 [tool.poetry.dependencies]
 python = "^3.11"
