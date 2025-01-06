@@ -30,7 +30,7 @@ def new_url():
 
     if not utils.validate_url(name_url):
         flash("Некорректный URL", category="error")
-        return redirect(url_for("index", url=url))
+        return redirect(url_for("index", url=url), 302)
 
     try:
         db_manager.save_url(name_url)
