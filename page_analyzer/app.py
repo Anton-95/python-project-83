@@ -18,29 +18,29 @@ app.secret_key = secrets.token_hex(16)
 
 @app.route("/")
 def index():
-    messages = get_flashed_messages(with_categories=True)
+    # messages = get_flashed_messages(with_categories=True)
     url = request.args.get("url", "")
-    return render_template("index.html", url=url, messages=messages)
+    return render_template("index.html", url=url)
 
 
-@app.post("/urls")
-def new_url():
-    url = request.form.get("url")
-    name_url = utils.normalization_url(url)
+# @app.post("/urls")
+# def new_url():
+#     url = request.form.get("url")
+#     name_url = utils.normalization_url(url)
 
-    if not utils.validate_url(name_url):
-        flash("Некорректный URL", category="error")
-        return redirect(url_for("index", url=url), 422)
+#     if not utils.validate_url(name_url):
+#         flash("Некорректный URL", category="error")
+#         return redirect(url_for("index", url=url), 422)
 
-    try:
-        db_manager.save_url(name_url)
-        url_id = db_manager.get_id_url(name_url)
-        flash("Страница успешно добавлена", category="success")
-        return redirect(url_for("get_url", url_id=url_id))
-    except db_manager.URLError:
-        url_id = db_manager.get_id_url(name_url)
-        flash("Страница уже существует", category="info")
-        return redirect(url_for("get_url", url_id=url_id))
+#     try:
+#         db_manager.save_url(name_url)
+#         url_id = db_manager.get_id_url(name_url)
+#         flash("Страница успешно добавлена", category="success")
+#         return redirect(url_for("get_url", url_id=url_id))
+#     except db_manager.URLError:
+#         url_id = db_manager.get_id_url(name_url)
+#         flash("Страница уже существует", category="info")
+#         return redirect(url_for("get_url", url_id=url_id))
 
 
 @app.route("/urls/<int:url_id>")
@@ -68,7 +68,27 @@ def new_check(url_id):
         return redirect(url_for("get_url", url_id=url_id))
 
 
-@app.route("/urls")
+@app.route("/urls", methods=["GET", "POST"])
 def get_all_urls():
+
+    if request.method == "POST":
+        url = request.form.get("url")
+        name_url = utils.normalization_url(url)
+
+        if not utils.validate_url(name_url):
+            flash("Некорректный URL", category="error")
+            messages = get_flashed_messages(with_categories=True)
+            return render_template("index.html", url=url, messages=messages)
+
+        try:
+            db_manager.save_url(name_url)
+            url_id = db_manager.get_id_url(name_url)
+            flash("Страница успешно добавлена", category="success")
+            return redirect(url_for("get_url", url_id=url_id))
+        except db_manager.URLError:
+            url_id = db_manager.get_id_url(name_url)
+            flash("Страница уже существует", category="info")
+            return redirect(url_for("get_url", url_id=url_id))
+
     urls = db_manager.get_all_urls()
     return render_template("urls.html", urls=urls)
