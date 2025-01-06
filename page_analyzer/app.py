@@ -1,3 +1,4 @@
+from email import message
 import secrets
 
 from flask import (
@@ -30,7 +31,7 @@ def new_url():
 
     if not utils.validate_url(name_url):
         flash("Некорректный URL", category="error")
-        return redirect(url_for("index", url=url))
+        return redirect(url_for("get_all_urls", url=url))
 
     try:
         db_manager.save_url(name_url)
@@ -69,6 +70,9 @@ def new_check(url_id):
 
 
 @app.route("/urls")
-def get_all_urls():
+def get_all_urls(url=''):
+    messages = get_flashed_messages(with_categories=True)
+    if messages:
+        return render_template("index.html", url=url, messages=messages)
     urls = db_manager.get_all_urls()
     return render_template("urls.html", urls=urls)

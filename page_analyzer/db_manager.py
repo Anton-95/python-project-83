@@ -26,10 +26,8 @@ def save_url(url):
         result = cursor.fetchone()
 
         if result is None:
-            add_url = """INSERT INTO
-                            urls (name, created_at)
-                         VALUES
-                            (%s, %s)"""
+            add_url = """INSERT INTO urls (name, created_at)
+                         VALUES (%s, %s)"""
             cursor.execute(add_url, (url, datetime.now()))
 
         else:
@@ -49,6 +47,7 @@ def get_url(url_id):
 
     conn.commit()
     conn.close()
+
     return url
 
 
@@ -63,6 +62,7 @@ def get_id_url(url):
 
     conn.commit()
     conn.close()
+
     return url_id
 
 
@@ -85,6 +85,7 @@ def get_all_urls():
 
     conn.commit()
     conn.close()
+
     return urls
 
 
@@ -95,8 +96,7 @@ def save_url_check(url_id, status_code, tags):
         query = """INSERT INTO url_checks (
                        url_id, status_code, h1, title, description, created_at
                        )
-                   VALUES
-                       (%s, %s, %s, %s, %s, %s)"""
+                   VALUES (%s, %s, %s, %s, %s, %s)"""
         cursor.execute(
             query,
             (
@@ -125,10 +125,12 @@ def get_all_url_checks(url_id):
                        description,
                        created_at
                    FROM url_checks
-                   WHERE url_id = %s ORDER BY created_at DESC"""
+                   WHERE url_id = %s
+                   ORDER BY created_at DESC"""
         cursor.execute(query, (url_id,))
         check_url = cursor.fetchall()
 
     conn.commit()
     conn.close()
+
     return check_url
