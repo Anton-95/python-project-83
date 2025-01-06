@@ -14,14 +14,16 @@
     </tr>
     </thead>
     <tbody>
+      {% if urls %}
       {% for url in urls %}
         <tr>
           <td>{{ url.id }}</td>
           <td><a href="{{ url_for('get_url', url_id=url.id) }}">{{ url.name }}</a></td>
-          <td>{{ url.last_check if url.last_check is not none else '' }}</td>
+          <td>{{ url.last_check.strftime('%Y-%m-%d') if url.last_check is not none else '' }}</td>
           <td>{{ url.status_code if url.status_code is not none else '' }}</td>
         </tr>
       {% endfor %}
+      {% endif %}
     </tbody>
   </table>
 </div>
