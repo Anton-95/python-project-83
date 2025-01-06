@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 import psycopg2
 import requests
 import validators
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -79,7 +80,7 @@ def validate_url(url):
 def get_url(url_id):
     messages = get_flashed_messages(with_categories=True)
     conn = psycopg2.connect(DATABASE_URL)
-    query = "SELECT id, name FROM urls WHERE id = %s"
+    query = "SELECT id, name, created_at FROM urls WHERE id = %s"
 
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
         cursor.execute(query, (url_id,))
@@ -119,13 +120,33 @@ def new_check(url_id):
 
     status_code = response.status_code
 
+    soup = BeautifulSoup(response.text, "html.parser")
+    tag_h1 = soup.find("h1")
+    if tag_h1:
+        tag_h1 = tag_h1.text
+    else:
+        tag_h1 = ""
+
+    tag_title = soup.find("title")
+    if tag_title:
+        tag_title = tag_title.text
+    else:
+        tag_title = ""
+
+    tag_meta = soup.find("meta", {"name": "description"})
+    if tag_meta and "content" in tag_meta.attrs:
+        tag_meta = tag_meta["content"]
+    else:
+        tag_meta = ""
+
     with conn.cursor() as cursor:
-        query = """INSERT INTO
-                       url_checks (url_id, status_code, h1, title, description, created_at)
+        query = """INSERT INTO url_checks (
+                       url_id, status_code, h1, title, description, created_at
+                       )
                    VALUES
                        (%s, %s, %s, %s, %s, %s)"""
         cursor.execute(
-            query, (url_id, status_code, "test", "test", "test", datetime.now())
+            query, (url_id, status_code, tag_h1, tag_title, tag_meta, datetime.now())
         )
 
     conn.commit()
