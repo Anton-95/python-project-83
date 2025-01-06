@@ -4,6 +4,7 @@ from flask import (
     Flask,
     flash,
     get_flashed_messages,
+    make_response,
     redirect,
     render_template,
     request,
@@ -78,8 +79,12 @@ def get_all_urls():
         if not utils.validate_url(name_url):
             flash("Некорректный URL", category="error")
             messages = get_flashed_messages(with_categories=True)
-            return render_template("index.html", url=url, messages=messages)
-
+            # return render_template("index.html", url=url, messages=messages)
+            response = make_response(
+                render_template("index.html", url=url, messages=messages)
+            )
+            response.status_code = 422
+            return response
         try:
             db_manager.save_url(name_url)
             url_id = db_manager.get_id_url(name_url)
