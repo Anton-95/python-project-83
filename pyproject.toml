@@ -1,28 +1,29 @@
-[tool.poetry]
+[project]
 name = "hexlet-code"
 version = "0.1.0"
 description = ""
-authors = ["Anton Arkhipov <antonolegovich44@yandex.ru>"]
+authors = [{ name = "Anton Arkhipov", email = "antonolegovich44@yandex.ru" }]
+requires-python = "~=3.11"
 readme = "README.md"
-packages = [
-  { include = "page_analyzer" },
+dependencies = [
+    "flask>=3.1.0,<4",
+    "gunicorn>=23.0.0,<24",
+    "python-dotenv>=1.0.1,<2",
+    "psycopg2-binary>=2.9.10,<3",
+    "validators>=0.34.0,<0.35",
+    "requests>=2.32.3,<3",
+    "beautifulsoup4>=4.12.3,<5",
 ]
 
+[dependency-groups]
+dev = ["flake8>=7.1.1,<8"]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-flask = "^3.1.0"
-gunicorn = "^23.0.0"
-python-dotenv = "^1.0.1"
-psycopg2-binary = "^2.9.10"
-validators = "^0.34.0"
-requests = "^2.32.3"
-beautifulsoup4 = "^4.12.3"
+[tool.hatch.build.targets.sdist]
+include = ["page_analyzer"]
 
-
-[tool.poetry.group.dev.dependencies]
-flake8 = "^7.1.1"
+[tool.hatch.build.targets.wheel]
+include = ["page_analyzer"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
