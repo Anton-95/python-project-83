@@ -5,7 +5,7 @@ dev:
 	uv run flask --debug --app page_analyzer:app run
 
 linter:
-	uv run flake8 page_analyzer
+	uv run ruff check page_analyzer
 
 PORT ?= 8000
 start:

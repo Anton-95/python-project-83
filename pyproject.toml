@@ -16,7 +16,9 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["flake8>=7.1.1,<8"]
+dev = [
+    "ruff>=0.8.6",
+]
 
 [tool.hatch.build.targets.sdist]
 include = ["page_analyzer"]
