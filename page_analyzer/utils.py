@@ -17,9 +17,8 @@ def normalizating_url(url):
 
 
 def get_response(url):
-    response = requests.get(url)
-
     try:
+        response = requests.get(url)
         response.raise_for_status()
     except requests.exceptions.RequestException:
         return None
