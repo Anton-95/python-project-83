@@ -36,8 +36,10 @@ class UrlsRepository:
 
         with DatabaseConnection(self.dsn) as cursor:
             add_url = """INSERT INTO urls (name, created_at)
-                         VALUES (%s, %s)"""
+                         VALUES (%s, %s) RETURNING id"""
             cursor.execute(add_url, (url, datetime.now()))
+            id = cursor.fetchone()[0]
+        return id
 
     def availability_url(self, url):
         with DatabaseConnection(self.dsn) as cursor:

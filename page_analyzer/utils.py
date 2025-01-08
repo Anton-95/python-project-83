@@ -5,7 +5,7 @@ import validators
 from bs4 import BeautifulSoup
 
 
-def validate_url(url):
+def validating_url(url):
     return len(url) <= 255 and validators.url(url)
 
 
