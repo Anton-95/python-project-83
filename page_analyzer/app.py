@@ -1,15 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from flask import (
-    Flask,
-    flash,
-    get_flashed_messages,
-    redirect,
-    render_template,
-    request,
-    url_for,
-)
+from flask import Flask, flash, redirect, render_template, request, url_for
 
 from page_analyzer import db_manager, utils
 
@@ -34,8 +26,7 @@ def new_url():
 
     if not utils.validating_url(name_url):
         flash("Некорректный URL", category="error")
-        messages = get_flashed_messages(with_categories=True)
-        return render_template("index.html", url=url, messages=messages), 422
+        return render_template("index.html", url=url), 422
 
     try:
         url_id = urls_repo.save_url(name_url)
@@ -50,12 +41,9 @@ def new_url():
 
 @app.route("/urls/<int:url_id>")
 def get_url(url_id):
-    messages = get_flashed_messages(with_categories=True)
     url = urls_repo.get_url(url_id)
     checks_url = urls_repo.get_all_url_checks(url_id)
-    return render_template(
-        "url.html", url=url, checks_url=checks_url, messages=messages
-    )
+    return render_template("url.html", url=url, checks_url=checks_url)
 
 
 @app.post("/urls/<int:url_id>/checks")

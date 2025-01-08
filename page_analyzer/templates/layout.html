@@ -19,18 +19,19 @@
 </nav>
 
   </header>
-
-{% if messages %}
-  {% for category, message in messages %}
-    {% if category == 'success' %}
-      <div class="alert alert-success" role="alert">{{ message }}</div>
-    {% elif category == 'info' %}
-      <div class="alert alert-primary" role="alert">{{ message }}</div>
-    {% elif category == 'error' %}
-      <div class="alert alert-danger" role="alert">{{ message }}</div>
-    {% endif %}
-  {% endfor %}
-{% endif %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      {% if category == 'success' %}
+        <div class="alert alert-success" role="alert">{{ message }}</div>
+      {% elif category == 'info' %}
+        <div class="alert alert-primary" role="alert">{{ message }}</div>
+      {% elif category == 'error' %}
+        <div class="alert alert-danger" role="alert">{{ message }}</div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 
   <main class="flex-grow-1">
     <div class="container-lg mt-3">
