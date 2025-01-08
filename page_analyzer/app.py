@@ -60,16 +60,17 @@ def get_url(url_id):
 @app.post("/urls/<int:url_id>/checks")
 def new_check(url_id):
     url = urls_repo.get_url(url_id)["name"]
-    status_code = utils.get_status_code(url)
+    response = utils.get_response(url)
 
-    if status_code:
-        tags = utils.get_tags_url(url)
-        urls_repo.save_url_check(url_id, status_code, tags)
-        flash("Страница успешно проверена", category="success")
-        return redirect(url_for("get_url", url_id=url_id))
-    else:
+    if response is None:
         flash("Произошла ошибка при проверке", category="error")
         return redirect(url_for("get_url", url_id=url_id))
+
+    status_code = utils.get_status_code(response)
+    tags = utils.get_tags_url(response)
+    urls_repo.save_url_check(url_id, status_code, tags)
+    flash("Страница успешно проверена", category="success")
+    return redirect(url_for("get_url", url_id=url_id))
 
 
 @app.route("/urls", methods=["GET", "POST"])
@@ -77,7 +78,7 @@ def get_all_urls():
 
     if request.method == "POST":
         url = request.form.get("url")
-        name_url = utils.normalization_url(url)
+        name_url = utils.normalizating_url(url)
 
         if not utils.validate_url(name_url):
             flash("Некорректный URL", category="error")

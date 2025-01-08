@@ -31,19 +31,24 @@ class UrlsRepository:
         self.dsn = dsn
 
     def save_url(self, url):
+        if self.availability_url(url):
+            raise URLError("Страница уже существует")
+
         with DatabaseConnection(self.dsn) as cursor:
-            query = "SELECT id, name FROM urls WHERE name = %s"
+            add_url = """INSERT INTO urls (name, created_at)
+                         VALUES (%s, %s)"""
+            cursor.execute(add_url, (url, datetime.now()))
+
+    def availability_url(self, url):
+        with DatabaseConnection(self.dsn) as cursor:
+            query = "SELECT name FROM urls WHERE name = %s"
             cursor.execute(query, (url,))
-            result = cursor.fetchone()
-            if result is None:
-                add_url = """INSERT INTO urls (name, created_at)
-                             VALUES (%s, %s)"""
-                cursor.execute(add_url, (url, datetime.now()))
-            else:
-                raise URLError()
+            return cursor.fetchone()
 
     def get_url(self, url_id):
-        with DatabaseConnection(self.dsn, cursor_factory=RealDictCursor) as cursor:
+        with DatabaseConnection(
+            self.dsn, cursor_factory=RealDictCursor
+        ) as cursor:
             query = "SELECT id, name, created_at FROM urls WHERE id = %s"
             cursor.execute(query, (url_id,))
             url = cursor.fetchone()
@@ -58,7 +63,9 @@ class UrlsRepository:
         return url_id
 
     def get_all_urls(self):
-        with DatabaseConnection(self.dsn, cursor_factory=RealDictCursor) as cursor:
+        with DatabaseConnection(
+            self.dsn, cursor_factory=RealDictCursor
+        ) as cursor:
             query = """SELECT
                            urls.id,
                            urls.name,
@@ -92,7 +99,9 @@ class UrlsRepository:
             )
 
     def get_all_url_checks(self, url_id):
-        with DatabaseConnection(self.dsn, cursor_factory=RealDictCursor) as cursor:
+        with DatabaseConnection(
+            self.dsn, cursor_factory=RealDictCursor
+        ) as cursor:
             query = """SELECT
                            id,
                            status_code,
@@ -100,8 +109,7 @@ class UrlsRepository:
                            title,
                            description,
                            created_at
-                       FROM url_checks
-                       WHERE url_id = %s
+                       FROM url_checks WHERE url_id = %s
                        ORDER BY created_at DESC"""
             cursor.execute(query, (url_id,))
             check_url = cursor.fetchall()

@@ -9,41 +9,37 @@ def validate_url(url):
     return len(url) <= 255 and validators.url(url)
 
 
-def normalization_url(url):
+def normalizating_url(url):
     url_parse = urlparse(url)
     scheme = url_parse.scheme
     hostname = url_parse.netloc
     return f"{scheme.lower()}://{hostname.lower()}"
 
 
-def get_status_code(url):
+def get_response(url):
     try:
         response = requests.get(url)
-        response.raise_for_status()
-        return response.status_code
     except requests.exceptions.RequestException:
-        return False
+        return None
+    return response
 
 
-def get_tags_url(url):
-    response = requests.get(url)
+def get_status_code(response):
+    return response.status_code
+
+
+def get_tags_url(response):
     soup = BeautifulSoup(response.text, "html.parser")
 
-    h1 = soup.find("h1")
-    if h1:
-        h1 = h1.text
-    else:
-        h1 = ""
+    find_h1 = soup.find("h1")
+    h1 = find_h1.text if find_h1 else ""
 
-    title = soup.find("title")
-    if title:
-        title = title.text
-    else:
-        title = ""
+    find_title = soup.find("title")
+    title = find_title.text if find_title else ""
 
-    meta = soup.find("meta", {"name": "description"})
-    if meta and "content" in meta.attrs:
-        meta = meta["content"]
+    find_meta = soup.find("meta", {"name": "description"})
+    if find_meta and "content" in find_meta.attrs:
+        meta = find_meta["content"]
     else:
         meta = ""
 
